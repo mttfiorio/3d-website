@@ -5,18 +5,17 @@ import World from "./World";
 
 class Cube implements ISceneObject {
   mesh: THREE.Mesh;
-  rigidBody: RAPIER.RigidBody;
-  collider: RAPIER.Collider;
-  private step: number;
-  private speed: number;
+  private rigidBody: RAPIER.RigidBody;
+  private collider: RAPIER.Collider;
+  private initialRotation: {};
   private initialPosition: { x: number; y: number; z: number };
 
   constructor() {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshLambertMaterial({ color: 0xffcc00 });
     this.mesh = new THREE.Mesh(geometry, material);
-    this.step = 0;
-    this.speed = Math.random() * 0.02;
+    this.mesh.castShadow = true;
+    this.mesh.receiveShadow = true;
 
     const coefficient = 5;
     this.initialPosition = {
@@ -25,27 +24,41 @@ class Cube implements ISceneObject {
       z: coefficient * Math.random(),
     };
 
-    const rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(
-      this.initialPosition.x,
-      this.initialPosition.y,
-      this.initialPosition.z
-    );
-    const colliderDesc = RAPIER.ColliderDesc.cuboid(1, 1, 1);
+    const rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic()
+      .setTranslation(
+        this.initialPosition.x,
+        this.initialPosition.y,
+        this.initialPosition.z
+      )
+      .setRotation({
+        w: Math.random(),
+        x: Math.random(),
+        y: Math.random(),
+        z: Math.random(),
+      });
+    const colliderDesc = RAPIER.ColliderDesc.cuboid(0.5, 0.5, 0.5);
 
     this.rigidBody = World.getInstance().world.createRigidBody(rigidBodyDesc);
-    this.collider = World.getInstance().world.createCollider(colliderDesc);
+    this.collider = World.getInstance().world.createCollider(
+      colliderDesc,
+      this.rigidBody
+    );
   }
 
   getMesh = () => this.mesh;
 
-  getRigidBody = () => this.rigidBody;
-
-  getCollider = () => this.collider;
-
   update = () => {
     const rbPosition = this.rigidBody.translation();
+    const rbRotation = this.rigidBody.rotation();
     this.mesh.position.set(rbPosition.x, rbPosition.y, rbPosition.z);
-    console.log(rbPosition);
+    this.mesh.rotation.setFromQuaternion(
+      new THREE.Quaternion(
+        rbRotation.x,
+        rbRotation.y,
+        rbRotation.z,
+        rbRotation.w
+      )
+    );
     /*
      this.step += this.speed;
     this.mesh.position.x =
