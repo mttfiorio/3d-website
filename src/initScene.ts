@@ -1,7 +1,11 @@
 import * as THREE from "three";
+import * as RAPIER from "@dimforge/rapier3d-compat";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import ISceneObject from "./3dEngine/ISceneObject";
+import World from "./3dEngine/World";
 
 const initScene = (sceneObjects: ISceneObject[]) => {
+  // Setup scene
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setClearColor("#e5e5e5");
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -42,9 +46,18 @@ const initScene = (sceneObjects: ISceneObject[]) => {
     camera.updateProjectionMatrix();
   });
 
+  // Create the ground
+  let groundColliderDesc = RAPIER.ColliderDesc.cuboid(10.0, 0.1, 10.0);
+  World.getInstance().world.createCollider(groundColliderDesc);
+
+  // Initialize all objects
   sceneObjects.forEach((obj) => scene.add(obj.getMesh()));
 
   renderer.setAnimationLoop(() => {
+    // Update physics simulation
+    World.getInstance().world.step();
+
+    // Update all objects
     sceneObjects.forEach((obj) => obj.update());
 
     renderer.render(scene, camera);

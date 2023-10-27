@@ -1,11 +1,13 @@
+import * as RAPIER from "@dimforge/rapier3d-compat";
 import Cube from "./3dEngine/Cube";
-import initObjects from "./initObjects";
 import initScene from "./initScene";
 
+await RAPIER.init();
+
 const cubes: Cube[] = [];
-for (let index = 0; index < 20; index++) {
+for (let index = 0; index < 1; index++) {
   const cube = new Cube();
   cubes.push(cube);
 }
 
-const scene = initScene(cubes);
+initScene(cubes);
