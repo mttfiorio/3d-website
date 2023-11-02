@@ -2,18 +2,18 @@ import * as RAPIER from "@dimforge/rapier3d-compat";
 import Cube from "./3dEngine/Cube";
 import initScene from "./initScene";
 import World from "./3dEngine/World";
+import Coin from "./3dEngine/Coin";
 
 await RAPIER.init();
 
 setInterval(() => {
-  const cube = new Cube();
+  const cube = new Coin();
   World.getInstance().sceneObjects.push(cube);
 }, 1000);
 
 window.addEventListener("click", () => {
-  const cube = new Cube();
+  const cube = new Coin();
   World.getInstance().sceneObjects.push(cube);
-  console.log("test");
 });
 
 initScene();

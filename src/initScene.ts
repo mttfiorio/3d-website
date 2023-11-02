@@ -4,6 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import World from "./3dEngine/World";
 
 const initScene = () => {
+  const debugColliders = false;
   const sceneObjects = World.getInstance().sceneObjects;
 
   // Setup scene
@@ -27,11 +28,13 @@ const initScene = () => {
   camera.position.set(5, 5, 5);
   orbit.update();
 
-  const aLight = new THREE.AmbientLight(0xffffff, 0.2);
+  const aLight = new THREE.AmbientLight(0xffffff, 0.1);
   scene.add(aLight);
 
   const pLight = new THREE.PointLight(0xffffff, 100, 1600);
-  pLight.shadow.radius = 2;
+  pLight.shadow.bias = -0.00001;
+  pLight.shadow.mapSize.width = 2048;
+  pLight.shadow.mapSize.height = 2048;
   pLight.position.set(0, 10, 0);
   pLight.castShadow = true;
   scene.add(pLight);
@@ -63,10 +66,15 @@ const initScene = () => {
     camera.updateProjectionMatrix();
   });
 
+  var lines: any;
+
   // Renderer loop
   renderer.setAnimationLoop(() => {
     // Add objects that were not added yet
-    sceneObjects.forEach((obj) => scene.add(obj.getMesh()));
+    sceneObjects.forEach((obj) => {
+      const object3d = obj.getMesh();
+      if (object3d) scene.add(object3d);
+    });
 
     // Update physics simulation
     World.getInstance().world.step();
@@ -76,6 +84,28 @@ const initScene = () => {
 
     // Update light to follow camera
     //pLight.position.copy(camera.position);
+
+    if (debugColliders) {
+      if (!lines) {
+        let material = new THREE.LineBasicMaterial({
+          color: 0xffffff,
+          vertexColors: true,
+        });
+        let geometry = new THREE.BufferGeometry();
+        lines = new THREE.LineSegments(geometry, material);
+        scene.add(lines);
+      }
+
+      let buffers = World.getInstance().world.debugRender();
+      lines.geometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(buffers.vertices, 3)
+      );
+      lines.geometry.setAttribute(
+        "color",
+        new THREE.BufferAttribute(buffers.colors, 4)
+      );
+    }
 
     renderer.render(scene, camera);
   });
