@@ -2,10 +2,10 @@ import * as THREE from "three";
 import * as RAPIER from "@dimforge/rapier3d-compat";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import World from "./3dEngine/World";
+import ISceneObject from "./3dEngine/ISceneObject";
 
 const initScene = () => {
   const debugColliders = false;
-  const sceneObjects = World.getInstance().sceneObjects;
 
   // Setup scene
   const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -25,17 +25,17 @@ const initScene = () => {
 
   const orbit = new OrbitControls(camera, renderer.domElement);
 
-  camera.position.set(5, 5, 5);
+  camera.position.set(20, 20, 20);
   orbit.update();
 
   const aLight = new THREE.AmbientLight(0xffffff, 0.1);
   scene.add(aLight);
 
-  const pLight = new THREE.PointLight(0xffffff, 100, 1600);
+  const pLight = new THREE.PointLight(0xffffff, 300, 1600);
   pLight.shadow.bias = -0.00001;
   pLight.shadow.mapSize.width = 2048;
   pLight.shadow.mapSize.height = 2048;
-  pLight.position.set(0, 10, 0);
+  pLight.position.set(-10, 10, -10);
   pLight.castShadow = true;
   scene.add(pLight);
 
@@ -70,10 +70,33 @@ const initScene = () => {
 
   // Renderer loop
   renderer.setAnimationLoop(() => {
+    // Remove objects that have fallen down
+    const itemsToRemove = [];
+    const itemsToKeep = World.getInstance().sceneObjects.reduce(
+      (previousValue: ISceneObject[], obj) => {
+        const object3d = obj.getMesh();
+
+        if (object3d && object3d.position.y < -100) {
+          itemsToRemove.push(obj);
+          scene.remove(object3d);
+          return previousValue;
+        }
+
+        return [...previousValue, obj];
+      },
+      []
+    );
+
+    World.getInstance().sceneObjects = itemsToKeep;
+    let sceneObjects = itemsToKeep;
+
     // Add objects that were not added yet
     sceneObjects.forEach((obj) => {
       const object3d = obj.getMesh();
-      if (object3d) scene.add(object3d);
+
+      if (object3d) {
+        scene.add(object3d);
+      }
     });
 
     // Update physics simulation

@@ -40,7 +40,7 @@ class Coin implements ISceneObject {
     const coefficient = 5;
     this.initialPosition = {
       x: coefficient * Math.random(),
-      y: coefficient * Math.random(),
+      y: coefficient * Math.random() + 100,
       z: coefficient * Math.random(),
     };
 

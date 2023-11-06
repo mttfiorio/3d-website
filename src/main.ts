@@ -9,7 +9,7 @@ await RAPIER.init();
 setInterval(() => {
   const cube = new Coin();
   World.getInstance().sceneObjects.push(cube);
-}, 1000);
+}, 200);
 
 window.addEventListener("click", () => {
   const cube = new Coin();
